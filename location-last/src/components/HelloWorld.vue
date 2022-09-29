@@ -1,15 +1,5 @@
 <template>
-  <div style="height: 500px; width: 100%">
-    <div style="height: 200px; overflow: auto;">
-      <p>First marker is placed at </p>
-      <p>Center is at {{ currentCenter }} and the zoom is: {{ currentZoom }}</p>
-      <button @click="showLongText">
-        Toggle long popup
-      </button>
-      <button @click="showMap = !showMap">
-        Toggle map
-      </button>
-    </div>
+  <div style="height: 700px; width: 100%">
     <l-map
         v-if="showMap"
         :zoom="zoom"
@@ -42,7 +32,6 @@
 <script>
 import { latLng, icon } from "leaflet";
 import { LMap, LTileLayer, LMarker, LTooltip } from "vue2-leaflet";
-import {HubConnectionBuilder} from "@microsoft/signalr";
 
 export default {
   name: "HelloWorld",
@@ -54,8 +43,6 @@ export default {
   },
   data() {
     return {
-      x: 1,
-      y: 2,
       icon: icon({
         iconUrl: require('../assets/car.png'),
         iconSize: [32, 37],
@@ -68,7 +55,6 @@ export default {
           '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
       withTooltip: latLng(20, 30),
       currentZoom: 11.5,
-      currentCenter: latLng(this.x, -1.219482),
       showParagraph: false,
       mapOptions: {
         zoomSnap: 0.5
@@ -77,20 +63,12 @@ export default {
     };
   },
   created() {
-    const connection = new HubConnectionBuilder()
-        .withUrl('http://api.app.roofest.online/chat')
-        .build();
-
-    connection.start();
-
-    connection.on("ReceiveMessage", (data) => {
-      console.log("Received Location From App");
-      console.log(data);
-      // this.lat = data.lat;
-      // this.lng = data.lng;
-      this.center = latLng(data.lat, data.lng);
-      this.withTooltip = latLng(data.lat, data.lng);
-    });
+      this.$signalR.on("ReceiveMessage", (data) => {
+        console.log("Received Location From App");
+        console.log(data);
+        this.center = latLng(data.lat, data.lng);
+        this.withTooltip = latLng(data.lat, data.lng);
+      });
   },
   methods: {
     zoomUpdate(zoom) {
